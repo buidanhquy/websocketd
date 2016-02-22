@@ -1,0 +1,85 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>websocketd count example</title>
+    <style>
+      #count {
+        font: bold 150px arial;
+        margin: auto;
+        padding: 10px;
+        text-align: center;
+      }
+    </style>
+
+<script>
+
+function setCookie(cname,cvalue,exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    //d.setTime(d.getTime() + (exdays*1000));
+    var expires = "expires=" + d.toGMTString();
+    document.cookie = cname+"="+cvalue+"; "+expires;
+}
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0; i<ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1);
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
+function isToken(buff) {
+    var check = buff.substr(0, 5);
+    var n = check.localeCompare("token");
+    buff = buff.substr(6, buff.length);
+    return n;
+}
+
+function checkCookie(ws, token) {
+    if (token != "") {
+        var a = location.search + '&token=' + token;
+        ws.send(a);
+    } else {
+        user = prompt("Username:","");
+        pass = prompt("Passpword","");
+        if (user != "" && user != null && pass != "" && pass != null) {
+            var a = '&action=login' + '&id=' + user + '&password=' + pass;
+            ws.send(a);
+        }
+    }
+}
+
+</script>
+
+  </head>
+  <body>
+    <script>
+    var ws = new WebSocket('ws://ubuntu:8080/');
+    var token = "";
+
+    ws.onopen = function() {
+        document.body.style.backgroundColor = '#cfc';
+        token = getCookie("token");
+        checkCookie(ws, token);
+    };
+    ws.onclose = function() {
+        document.body.style.backgroundColor = null;
+    };
+    ws.onmessage = function(event) {
+        console.log(event.data);
+        var check = isToken(event.data);
+        if (check == 0) {
+            setCookie("token", event.data, 10);
+            token = getCookie("token");
+        }
+    };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,14 @@
+BEGIN myproto
+
+REQUEST list_tables 100 {
+    PARAM request char [50]
+}
+
+REQUEST show_table 101 {
+    PARAM table_name char [10]
+}
+
+REQUEST edit_table 102 {
+    PARAM table_name char [10]
+}
+END
