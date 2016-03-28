@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="us">
+<head>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.8.3.js"></script>
+</head>
+<body>
+
+<body background="img/bg.png">
+                    <div class="tab-content">
+
+                        <div class="tab-pane" id="tab-table2">
+
+                        <table id="111"  cellspacing="0" width="100%">
+                        <tr>
+        <th>User_Name</th>
+        <th>score</th>
+        <th>team</th>
+    </tr>
+</table>
+</div>
+</div>
+<script>
+    $(document).ready(function () {
+        var json = [{"User_Name":"John Doe","score":"10","team":"1"},{"User_Name":"Jane Smith","score":"15","team":"2"},{"User_Name":"Chuck Berry","score":"12","team":"2"}];
+        var tr;
+        for (var i = 0; i < json.length; i++) {
+            tr = $('<tr/>');
+            tr.append("<td>" + json[i].User_Name + "</td>");
+            tr.append("<td>" + json[i].score + "</td>");
+            tr.append("<td>" + json[i].team + "</td>");
+            $('#111').append(tr);
+        }
+    });
+</script>
+
+</body>
+</html>

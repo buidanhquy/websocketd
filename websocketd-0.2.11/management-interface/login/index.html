@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>DataTables example - Scrolling and Bootstrap tabs</title>
+    <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.11/css/dataTables.bootstrap.min.css">
+    <script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <script type="text/javascript" language="javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.11/js/dataTables.bootstrap.min.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.8.3.js"></script>
+    <link href="jquery-ui-1.11.4/jquery-ui.css" rel="stylesheet">
+    <script src="js/my-javascript.js"></script>
+</head>
+<body class="wide comments example dt-example-bootstrap">
+<center><h2><p style="font-size:30px; color: #1C1C1C">Management Interface</p></h2></center>
+
+    <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;">
+        <strong>Online User</strong>
+    </div>
+                            <input type="submit" id="onlButton" value="Load" /><br />
+                            <table id="onlTable" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                            <tr>
+                            <th>Account</th>
+                            <th>Node ID</th>
+                            <th>Action</th>
+                            </tr>
+                            </table>
+
+    <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;">
+        <strong>Permission</strong>
+    </div>
+                            <input type="submit" id="perButton" value="Load" /><br />
+                            <table id="perTable" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                            <tr>
+                            <th>User ID</th>
+                            <th>Node ID</th>
+                            <th>Action</th>
+                            </tr>
+                            <td><input type="text" id="perUser"/></td>
+                            <td><input type="text" id="perNode"/></td>
+                            <td><input type="submit" id="perSubmit" value="Add new" /></td>
+                            </table>
+
+
+    <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;">
+        <strong>Asterisk Account</strong>
+    </div>
+                            <input type="submit" id="astButton" value="Load" /><br />
+                            <table id="astTable" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                            <tr>
+                            <th>Account</th>
+                            <th>Password</th>
+                            <th>Action</th>
+                            </tr>
+                            <td><input type="text" id="astAccount"/></td>
+                            <td><input type="text" id="astPassword"/></td>
+                            <td><input type="submit" id="astSubmit" value="Add new" /></td>
+                            </table>
+
+<script>
+$(document).ready(function () {
+    var ws;
+    var token = "";
+    token = getCookie("token");
+
+    function start(){
+        ws = new WebSocket('ws://192.168.2.50:8080/');
+
+        ws.onopen = function() {
+            console.log("Connection opened");
+        };
+        ws.onmessage = function(event) {
+            var str = event.data;
+            var n = str.indexOf(":");
+            
+            var action = str.substr(0, str.indexOf(":"));
+            var json = JSON.parse(str.substr(n + 1, str.length));
+
+            console.log(event.data);
+
+            var tr;
+
+            if (action == 'report_status') {
+                alert(json.status);
+            }
+            else if (action == 'list_onl_acc') {
+                $("#onlTable").find("tr:gt(1)").remove();
+
+                for (var i = 0; i < json.length; i++) {
+                    tr = $('<tr/>');
+                    tr.append("<td>" + json[i].acc_id + "</td>");
+                    tr.append("<td>" + json[i].node_id + "</td>");
+                    tr.append("<td><button class='onlDel'>Delete</button></td>");
+                    $('#onlTable').append(tr);
+                }
+            }
+            else if (action == 'list_per'){
+                $("#perTable").find("tr:gt(1)").remove();
+
+                for (var i = 0; i < json.length; i++) {
+                    tr = $('<tr/>');
+                    tr.append("<td>" + json[i].acc_id + "</td>");
+                    tr.append("<td>" + json[i].node_id + "</td>");
+                    tr.append("<td><button class='perDel'>Delete</button></td>");
+                    $('#perTable').append(tr);
+                }
+            }
+            else if (action == 'list_acc'){
+                $("#astTable").find("tr:gt(1)").remove();
+
+                for (var i = 0; i < json.length; i++) {
+                    tr = $('<tr/>');
+                    tr.append("<td>" + json[i].account + "</td>");
+                    tr.append("<td>" + json[i].password + "</td>");
+                    tr.append("<td><button class='astDel'>Delete</button></td>");
+                    $('#astTable').append(tr);
+                }
+            }
+
+        };
+        ws.onclose = function() {
+           console.log("Connection closed");
+           check();
+        };
+    }
+
+    function check(){
+        if(!ws || ws.readyState == 3) start();
+    } 
+    
+    start();
+
+    $("#onlButton").click(function(){
+        var message = '?action=list_online_account&token=' + token;
+        ws.send(message);
+    });
+
+    $("#perButton").click(function(){
+        var message = '?action=list_permission&token=' + token;
+        ws.send(message);
+    });
+
+    $("#astButton").click(function(){
+        var message = '?action=list_account&token=' + token;
+        ws.send(message);
+    });
+
+    $('#astTable').on('click', '.astDel', function() {
+        $(this).parent().fadeOut(0, function(){
+            var user=$(this).parent().find('td:first').html();
+            var result = confirm("Delete account: "+user+ "?");
+            if (result) {
+                $(this).parent().remove();
+                var message = '?action=remove_account&id='+user+'&token=' + token;
+                ws.send(message);
+            }
+        });
+    });
+
+    $("#astSubmit").click(function(){
+        var acc = document.getElementById("astAccount").value;
+        var pass = document.getElementById("astPassword").value;
+        var message = '?action=add_account&id='+acc+'&password='+pass+'&token=' + token;
+        ws.send(message);
+    });
+
+    $('#perTable').on('click', '.perDel', function() {
+        $(this).parent().fadeOut(0, function(){
+            var user=$(this).parent().find('td:first').html();
+            var node=$(this).parent().find('td:nth-child(2)').html();
+            var result = confirm("Delete permission access: "+user+"-"+node+" ?");
+            if (result) {
+                $(this).parent().remove();
+                var message = '?action=remove_permission&acc_id='+user+'&node_id='+node+'&token=' + token;
+                ws.send(message);
+            }
+        });
+    });
+
+    $("#perSubmit").click(function(){
+        var user = document.getElementById("perUser").value;
+        var node = document.getElementById("perNode").value;
+        var message = '?action=add_permission&acc_id=='+user+'&node_id='+node+'&token=' + token;
+        ws.send(message);
+    });
+
+});
+</script>
+
+<script>
+    function onlAdd() {
+        alert("onlAdd");
+    }
+
+    function onlRemove() {
+        alert("onlRemove");
+    }
+
+</script>
+
+</body>
+</html>

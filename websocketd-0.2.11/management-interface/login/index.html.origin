@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>DataTables example - Scrolling and Bootstrap tabs</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="jquery-ui-1.11.4/external/jquery/jquery.js"></script>
+    <script src="jquery-ui-1.11.4/jquery-ui.js"></script>
+
+    <script src="js/my-javascript.js"></script>
+</script>
+</head>
+<body class="wide comments example dt-example-bootstrap">
+<center><h2><p style="font-size:30px; color: #1C1C1C">Management Interface</p></h2></center>
+
+                <div>
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="active">
+                            <a href="#tab-online" id ="online-id" data-toggle="tab">Online Account</a>
+                        </li>
+                        <li>
+                            <a href="#tab-permission" id ="per-id" data-toggle="tab">Permission</a>
+                        </li>
+                        <li>
+                            <a href="#tab-asterisk" id ="ast-id" data-toggle="tab">Asterisk Account</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="tab-online">
+                            <table id="onlTable" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                            <tr>
+                            <th>Account</th>
+                            <th>Node ID</th>
+                            </tr>
+                            </table>
+                        </div>
+
+                        <div class="tab-pane" id="tab-permission">
+                            <table id="perTable" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                            <tr>
+                            <th>User ID</th>
+                            <th>Node ID</th>
+                            </tr>
+                            </table>
+                            <input id="onlAdd" type="button" value="onlAdd" onclick="onlAdd();" />
+                            <input id="onlRemove" type="button" value="onlRemove" onclick="onlRemove();" />
+                        </div>
+
+                        <div class="tab-pane" id="tab-asterisk">
+                            <table id="astTable" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                            <tr>
+                            <th>Account</th>
+                            <th>Password</th>
+                            </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+<script>
+$(document).ready(function () {
+    var ws;
+    var token = "";
+    token = getCookie("token");
+
+    function start(){
+        ws = new WebSocket('ws://localhost:8080/');
+
+        ws.onopen = function() {
+        };
+        ws.onmessage = function() {
+        };
+        ws.onclose = function() {
+           console.log("Connection closed");
+           check();
+        };
+    }
+
+    function check(){
+        if(!ws || ws.readyState == 3) start();
+    } 
+    
+    start();
+
+    $(".nav-tabs a").click(function(){
+        $(this).tab('show');      
+
+        if (this.id == "online-id") {
+            var message = '?action=list_online_account&token=' + token;
+        }
+        else if (this.id == "per-id") {
+            var message = '?action=list_permission&token=' + token;
+        }
+        else if (this.id == "ast-id") {
+            var message = '?action=list_asterisk_account&token=' + token;
+        }
+
+        ws.send(message);
+    });
+});
+
+</script>
+</body>
+</html>
+
+

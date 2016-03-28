@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+
+	<title>Management Interface</title>
+
+	<link rel="stylesheet" href="css/login-form.css" media="screen">
+    <meta name="robots" content="noindex,follow" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="jquery-ui-1.11.4/external/jquery/jquery.js"></script>
+    <script src="jquery-ui-1.11.4/jquery-ui.js"></script>
+    <script src="js/my-javascript.js"></script>
+
+</head>
+
+<body>
+
+<body background="img/bg.png">
+
+
+<script>
+    var ws = new WebSocket('ws://localhost:8080/');
+    var token = "";
+
+    token = getCookie("token");
+
+    if (token != "") {
+        location.replace("index.html");
+    }
+</script>
+
+<center><h2><p style="font-size:30px;color: #1C1C1C">Welcome to ICS-project</p></h2></center>
+
+<div class="login-form">
+
+	<center><h1>Login</h1></center>
+
+	<form method="post">
+
+		<input class="required" type="text" name="username" placeholder="username" id="username">
+		
+		<input class="required" type="password" name="password" placeholder="password" id="password">
+
+		<span>
+			<input type="checkbox" name="checkbox">
+			<label for="checkbox">remember</label>
+		</span>
+		
+		<input type="button" onclick="check(this.form)" value="log in">
+
+	</form>
+
+    <script language="javascript">
+    function check(form) {
+        var user = document.getElementById("username").value;
+        var pass = document.getElementById("password").value;
+    
+        if (user != "" && user != null && pass != "" && pass != null) {
+            var a = '&action=login' + '&id=' + user + '&password=' + pass;
+            ws.send(a);
+        }
+
+        ws.onopen = function() {
+            document.body.style.backgroundColor = '#cfc';
+        };
+        ws.onclose = function() {
+            document.body.style.backgroundColor = null;
+        };
+        ws.onmessage = function(event) {
+            console.log(event.data);
+
+            var check = isToken(event.data);
+            if (check === 0) {
+                setCookie("token", event.data.substr(6, event.data.length), 10);
+            }
+
+            token = getCookie("token");
+
+            if (token != "") {
+                location.replace("index.html");
+            }
+        };
+    }
+    </script>
+</div>
+</body>
+</html>
